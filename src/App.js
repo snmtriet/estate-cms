@@ -1,25 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useContext, useEffect } from "react";
+import "./App.css";
+import { Switch, Route } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import SignIn from "./pages/SignIn";
+import { Context } from "./context/authContext";
 
-function App() {
+export default function App() {
+  const { tryLocalSignin } = useContext(Context);
+
+  useEffect(() => {
+    tryLocalSignin();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Switch>
+      <Route exact path="/" component={Dashboard} />
+      <Route path="/signin" component={SignIn} />
+      <Route path="/addestate" component={Dashboard} />
+    </Switch>
   );
 }
-
-export default App;
