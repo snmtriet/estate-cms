@@ -29,20 +29,16 @@ const tryLocalSignin = (dispatch) => async () => {
   }
 };
 
-const addEstate =
-  (dispatch) =>
-  async ({ name }) => {
-    console.log(name);
-    name = name.trim();
-    try {
-      const response = await estateApi.post("/estates", {
-        name,
-      });
-      console.log(response.data.data.estate);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+const addEstate = (dispatch) => async (name) => {
+  name = name.trim();
+  try {
+    await estateApi.post("/estates", {
+      name,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const deleteEstate = (dispatch) => async (listEstate) => {
   try {
@@ -50,12 +46,11 @@ const deleteEstate = (dispatch) => async (listEstate) => {
     const bytes = await cryptoJs.AES.decrypt(token, "secret token");
     const originalToken = await bytes.toString(cryptoJs.enc.Utf8);
     listEstate.map(async (id) => {
-      const response = await estateApi.delete(`/estates/${id}`, {
+      await estateApi.delete(`/estates/${id}`, {
         headers: {
           Authorization: `Bearer ${originalToken}`,
         },
       });
-      console.log(response.status);
     });
   } catch (error) {
     console.log(error);

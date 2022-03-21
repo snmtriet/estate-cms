@@ -19,12 +19,22 @@ import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
+import UpdateIcon from "@mui/icons-material/Update";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Container from "@mui/material/Container";
+import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
 
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -36,6 +46,7 @@ import { Context } from "../context/authContext";
 import cryptoJs from "crypto-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { display } from "@mui/system";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -168,13 +179,15 @@ export default function EnhancedTable() {
   const [estateData, setEstateData] = React.useState([]);
   const [renderData, setRenderData] = React.useState(false);
   const [role, setRole] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const [nameEstate, setNameEstate] = React.useState("");
+  const [statusEstate, setStatusEstate] = React.useState("");
 
   const cryptoData = (value, type) => {
     const bytes = cryptoJs.AES.decrypt(value, `secret ${type}`);
     const originalValue = bytes.toString(cryptoJs.enc.Utf8);
     return originalValue;
   };
-
   React.useEffect(() => {
     const getData = async () => {
       const token = await Cookies.get("auth");
@@ -255,12 +268,24 @@ export default function EnhancedTable() {
     name: yup.string().required("Name estate is required").trim(),
   });
 
+  const filterOptions = createFilterOptions({
+    matchFrom: "start",
+    stringify: (option) => option.status,
+  });
+
+  const uniqueStatusEstate = [
+    ...new Map(estateData.map((item) => [item["status"], item])).values(),
+  ];
+
   return (
     <Box fullWidth>
       <Formik
         validationSchema={addEstateValidationSchema}
         initialValues={{ name: "" }}
-        onSubmit={addEstate}
+        onSubmit={(values) => {
+          addEstate(values.name);
+          values.name = "";
+        }}
       >
         {({
           handleChange,
@@ -371,9 +396,10 @@ export default function EnhancedTable() {
             <Tooltip title="Delete">
               <IconButton
                 onClick={() => {
+                  setSelected([]);
                   deleteEstate(selected);
-                  setRenderData(true);
                   toast.success("Xóa thành công");
+                  setRenderData(true);
                 }}
               >
                 <DeleteIcon />
@@ -381,9 +407,40 @@ export default function EnhancedTable() {
             </Tooltip>
           ) : (
             <Tooltip title="Filter list">
-              <IconButton>
-                <FilterListIcon />
-              </IconButton>
+              <>
+                <Autocomplete
+                  id="filter-status"
+                  options={uniqueStatusEstate}
+                  isOptionEqualToValue={(option, value) =>
+                    option.status === value.status
+                  }
+                  getOptionLabel={(option) => option.status}
+                  filterOptions={filterOptions}
+                  sx={{ width: 300 }}
+                  onChange={(e, value) => {
+                    if (value) {
+                      const filterData = estateData.filter((item) => {
+                        return item.status === value.status;
+                      });
+                      setEstateData(filterData);
+                    } else {
+                      setRenderData(true);
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="address.country"
+                      label="Filter status"
+                      variant="outlined"
+                      fullWidth
+                    />
+                  )}
+                />
+                <IconButton>
+                  <FilterListIcon />
+                </IconButton>
+              </>
             </Tooltip>
           )}
         </Toolbar>
@@ -412,17 +469,20 @@ export default function EnhancedTable() {
                   return (
                     <TableRow
                       hover
-                      onClick={(event) => handleClick(event, item._id)}
+                      // onClick={(event) => handleClick(event, item._id)}
                       role="checkbox"
-                      aria-checked={isItemSelected}
+                      // aria-checked={isItemSelected}
                       tabIndex={-1}
                       key={item._id}
-                      selected={isItemSelected}
+                      // selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">
                         <Checkbox
                           color="primary"
                           checked={isItemSelected}
+                          aria-checked={isItemSelected}
+                          onClick={(event) => handleClick(event, item._id)}
+                          selected={isItemSelected}
                           inputProps={{
                             "aria-labelledby": labelId,
                           }}
@@ -442,9 +502,90 @@ export default function EnhancedTable() {
                         {" "}
                         {moment(item.createdAt).format("DD-MM-YYYY HH:mm")}
                       </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            const EstateUpdateById = estateData.filter(
+                              (estate) => {
+                                return estate._id === item._id;
+                              }
+                            );
+                            setNameEstate(EstateUpdateById[0].name);
+                            setStatusEstate(EstateUpdateById[0].status);
+                            setOpen(true);
+                          }}
+                        >
+                          <UpdateIcon />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
+              <>
+                <Dialog
+                  open={open}
+                  onClose={() => {
+                    setOpen(false);
+                  }}
+                >
+                  <DialogTitle>Update Estate</DialogTitle>
+                  <DialogContent>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      id="name"
+                      label="Name Estate"
+                      type="text"
+                      fullWidth
+                      variant="outlined"
+                      defaultValue={nameEstate}
+                    />
+                    <FormControl>
+                      <FormLabel id="demo-row-radio-buttons-group-label">
+                        Status
+                      </FormLabel>
+                      <RadioGroup
+                        row
+                        aria-labelledby="demo-row-radio-buttons-group-label"
+                        name="row-radio-buttons-group"
+                      >
+                        <FormControlLabel
+                          value="female"
+                          control={<Radio />}
+                          label="Female"
+                        />
+                        <FormControlLabel
+                          value="male"
+                          control={<Radio />}
+                          label="Male"
+                        />
+                        <FormControlLabel
+                          value="other"
+                          control={<Radio />}
+                          label="Other"
+                        />
+                      </RadioGroup>
+                    </FormControl>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={() => {
+                        setOpen(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setOpen(false);
+                      }}
+                    >
+                      Update
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </>
               {emptyRows > 0 && (
                 <TableRow
                   style={{
