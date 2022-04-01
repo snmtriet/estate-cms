@@ -19,25 +19,15 @@ import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
-import UpdateIcon from "@mui/icons-material/Update";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import Container from "@mui/material/Container";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
-
-import { Formik } from "formik";
-import * as yup from "yup";
 
 import estateApi from "../axios/estate";
 import Cookies from "js-cookie";
@@ -46,7 +36,7 @@ import { Context } from "../context/authContext";
 import cryptoJs from "crypto-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { DialogContentText, InputLabel, MenuItem, Select } from "@mui/material";
+import { DialogContentText } from "@mui/material";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -80,34 +70,40 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
-    id: "name",
+    id: "fullname",
     numeric: false,
     disablePadding: true,
-    label: "Name",
+    label: "Fullname",
   },
   {
-    id: "status",
+    id: "email",
     numeric: true,
     disablePadding: false,
-    label: "Status",
+    label: "Email",
   },
   {
-    id: "category",
+    id: "role",
     numeric: true,
     disablePadding: false,
-    label: "Category",
+    label: "Role",
   },
   {
-    id: "updatedAt",
+    id: "faculty",
     numeric: true,
     disablePadding: false,
-    label: "updatedAt",
+    label: "Faculty",
   },
   {
     id: "createdAt",
     numeric: true,
     disablePadding: false,
     label: "CreatedAt",
+  },
+  {
+    id: "passwordChangedAt",
+    numeric: true,
+    disablePadding: false,
+    label: "PasswordChangedAt",
   },
 ];
 
@@ -173,13 +169,11 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-export default function EnhancedTable() {
-  const { addEstate, updateEstate, deleteEstate, state } =
-    React.useContext(Context);
-  console.log(state);
+export const Users = () => {
+  const { deleteUser } = React.useContext(Context);
 
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [estateData, setEstateData] = React.useState([]);
+  const [userData, setUserData] = React.useState([]);
   const [renderData, setRenderData] = React.useState(false);
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
@@ -187,13 +181,7 @@ export default function EnhancedTable() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [role, setRole] = React.useState("");
-  const [open, setOpen] = React.useState(false);
   const [open2, setOpen2] = React.useState(false);
-  const [nameEstate, setNameEstate] = React.useState("");
-  const [statusEstate, setStatusEstate] = React.useState("");
-  const [statusName, setStatusName] = React.useState("");
-  const [objUpdate, setObjUpdate] = React.useState({});
-  const [categoryData, setCategoryData] = React.useState([]);
 
   const cryptoData = (value, type) => {
     const bytes = cryptoJs.AES.decrypt(value, `secret ${type}`);
@@ -202,25 +190,18 @@ export default function EnhancedTable() {
   };
   React.useEffect(() => {
     const getData = async () => {
-      const token = await Cookies.get("auth");
       const role = await Cookies.get("role");
+      const token = await Cookies.get("auth");
       const originalRole = cryptoData(role, "role");
       const originalToken = cryptoData(token, "token");
       setRole(originalRole);
-      const resEstate = await estateApi.get("/estates", {
+      const response = await estateApi.get("/users", {
         headers: {
           Authorization: `Bearer ${originalToken}`,
         },
       });
-      const resCategory = await estateApi.get("/categories", {
-        headers: {
-          Authorization: `Bearer ${originalToken}`,
-        },
-      });
-      const dataEstate = await resEstate.data.data.estates;
-      const dataCategory = await resCategory.data.data.category;
-      setEstateData(dataEstate);
-      setCategoryData(dataCategory);
+      const data = await response.data.data.users;
+      setUserData(data);
       setRenderData(false);
     };
     getData();
@@ -234,7 +215,7 @@ export default function EnhancedTable() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = estateData.map((n) => n._id);
+      const newSelecteds = userData.map((n) => n._id);
       setSelected(newSelecteds);
       return;
     }
@@ -278,153 +259,20 @@ export default function EnhancedTable() {
     return selected.indexOf(_id) !== -1;
   };
 
-  // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - estateData.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - userData.length) : 0;
 
-  const addEstateValidationSchema = yup.object().shape({
-    name: yup.string().required("Name estate is required").trim(),
-  });
-
-  const filterOptionsStatus = createFilterOptions({
+  const filterOptions = createFilterOptions({
     matchFrom: "start",
-    stringify: (option) => option.status,
-  });
-  const filterOptionsCategory = createFilterOptions({
-    matchFrom: "start",
-    stringify: (option) => option.category.name,
+    stringify: (option) => option.role,
   });
 
-  const uniqueStatusEstate = [
-    ...new Map(estateData.map((item) => [item["status"], item])).values(),
-  ];
-  const uniqueCategoryEstate = [
-    ...new Map(
-      estateData.map((item) => [item.category["name"], item])
-    ).values(),
+  const uniqueRoleUser = [
+    ...new Map(userData.map((item) => [item["role"], item])).values(),
   ];
 
   return (
     <Box fullWidth>
-      <Formik
-        validationSchema={addEstateValidationSchema}
-        initialValues={{ name: "", category: "" }}
-        onSubmit={(values) => {
-          addEstate(values.name, values.category);
-          if (values.category === "") {
-            toast.warn("Chưa chọn thể loại");
-          } else {
-            toast.success("Thêm thành công");
-            values.name = "";
-            values.category = "";
-          }
-        }}
-      >
-        {({
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          values,
-          errors,
-          isValid,
-        }) => (
-          <Container component="main">
-            <CssBaseline />
-            <Box
-              sx={{
-                pr: 2,
-                pl: 2,
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
-              <Box component="form" onSubmit={handleSubmit} flex={5}>
-                <TextField
-                  margin="normal"
-                  fullWidth
-                  id="name"
-                  label="Estate name"
-                  name="name"
-                  autoComplete="name"
-                  value={values.name}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  autoFocus
-                />
-                {errors.email && (
-                  <Typography
-                    fontSize={16}
-                    component="h1"
-                    variant="h5"
-                    color="#d32f2f"
-                  >
-                    {errors.email}
-                  </Typography>
-                )}
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  mt: 0.5,
-                }}
-              >
-                <FormControl sx={{ mr: 1, ml: 1, mt: 0.5, minWidth: 120 }}>
-                  <InputLabel id="demo-simple-select-autowidth-label">
-                    Category
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-autowidth-label"
-                    id="demo-simple-select-autowidth"
-                    value={values.category}
-                    name="category"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    autoWidth
-                    label="Category"
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {categoryData.map((item) => {
-                      return (
-                        <MenuItem key={item._id} value={item._id}>
-                          {item.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box
-                sx={{
-                  ml: 2,
-                  display: "flex",
-                  flexDirection: "row",
-                  flex: 1,
-                }}
-              >
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  onClick={() => {
-                    setRenderData(true);
-                    handleSubmit();
-                  }}
-                  disabled={!isValid}
-                  sx={{ mt: 2, mb: 1 }}
-                >
-                  Add Estate
-                </Button>
-                <ToastContainer autoClose={2000} />
-              </Box>
-            </Box>
-          </Container>
-        )}
-      </Formik>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <Toolbar
           sx={{
@@ -455,7 +303,7 @@ export default function EnhancedTable() {
               id="tableTitle"
               component="div"
             >
-              Estate
+              User
             </Typography>
           )}
 
@@ -485,12 +333,11 @@ export default function EnhancedTable() {
                   color="error"
                 >
                   <DeleteIcon color="error" />
-                  Delete Estate
+                  Delete User
                 </DialogTitle>
                 <DialogContent>
                   <DialogContentText fontWeight="bold" fontSize={18}>
-                    Hành động này sẽ xóa vĩnh viễn tài sản. Bạn có thực sự muốn
-                    xóa ?
+                    Bạn có thực sự muốn xóa ?
                   </DialogContentText>
                 </DialogContent>
                 <DialogActions>
@@ -504,8 +351,8 @@ export default function EnhancedTable() {
                   </Button>
                   <Button
                     onClick={() => {
+                      deleteUser(selected);
                       setSelected([]);
-                      deleteEstate(selected);
                       toast.success("Xóa thành công");
                       setOpen2(false);
                       setRenderData(true);
@@ -515,25 +362,26 @@ export default function EnhancedTable() {
                   </Button>
                 </DialogActions>
               </Dialog>
+              <ToastContainer autoClose={2000} />
             </>
           ) : (
             <Tooltip title="Filter list">
               <>
                 <Autocomplete
-                  id="filter-status"
-                  options={uniqueStatusEstate}
+                  id="filter-role"
+                  options={uniqueRoleUser}
                   isOptionEqualToValue={(option, value) =>
-                    option.status === value.status
+                    option.role === value.role
                   }
-                  getOptionLabel={(option) => option.status}
-                  filterOptions={filterOptionsStatus}
+                  getOptionLabel={(option) => option.role}
+                  filterOptions={filterOptions}
                   sx={{ width: 300 }}
                   onChange={(e, value) => {
                     if (value) {
-                      const filterData = estateData.filter((item) => {
-                        return item.status === value.status;
+                      const filterData = userData.filter((item) => {
+                        return item.role === value.role;
                       });
-                      setEstateData(filterData);
+                      setUserData(filterData);
                     } else {
                       setRenderData(true);
                     }
@@ -541,37 +389,8 @@ export default function EnhancedTable() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      name="filterStatus"
-                      label="Filter status"
-                      variant="outlined"
-                      fullWidth
-                    />
-                  )}
-                />
-                <Autocomplete
-                  id="filter-category"
-                  options={uniqueCategoryEstate}
-                  isOptionEqualToValue={(option, value) =>
-                    option.category.name === value.category.name
-                  }
-                  getOptionLabel={(option) => option.category.name}
-                  filterOptions={filterOptionsCategory}
-                  sx={{ width: 400, ml: 1 }}
-                  onChange={(e, value) => {
-                    if (value) {
-                      const filterData = estateData.filter((item) => {
-                        return item.category.name === value.category.name;
-                      });
-                      setEstateData(filterData);
-                    } else {
-                      setRenderData(true);
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="filterCategory"
-                      label="Filter category"
+                      name="roles"
+                      label="Filter roles"
                       variant="outlined"
                       fullWidth
                     />
@@ -597,10 +416,10 @@ export default function EnhancedTable() {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={estateData.length}
+              rowCount={userData.length}
             />
             <TableBody>
-              {stableSort(estateData, getComparator(order, orderBy))
+              {stableSort(userData, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => {
                   const isItemSelected = isSelected(item._id);
@@ -634,116 +453,24 @@ export default function EnhancedTable() {
                         scope="row"
                         padding="none"
                       >
-                        {item.name}
+                        {item.fullname}
                       </TableCell>
-                      <TableCell align="right">{item.status}</TableCell>
-                      <TableCell align="right">{item.category.name}</TableCell>
+                      <TableCell align="right">{item.email}</TableCell>
+                      <TableCell align="right">{item.role}</TableCell>
+                      <TableCell align="right">{item.faculty.name}</TableCell>
                       <TableCell align="right">
-                        {" "}
-                        {moment(item.updatedAt).format("DD-MM-YYYY HH:mm")}
-                      </TableCell>
-                      <TableCell align="right">
-                        {" "}
                         {moment(item.createdAt).format("DD-MM-YYYY HH:mm")}
                       </TableCell>
-                      {role === "admin" && (
-                        <TableCell align="right">
-                          <IconButton
-                            color="primary"
-                            onClick={() => {
-                              const EstateUpdateById = estateData.filter(
-                                (estate) => {
-                                  return estate._id === item._id;
-                                }
-                              );
-                              setObjUpdate(EstateUpdateById);
-                              setNameEstate(EstateUpdateById[0].name);
-                              setStatusEstate(EstateUpdateById[0].status);
-                              setOpen(true);
-                            }}
-                          >
-                            <UpdateIcon />
-                          </IconButton>
-                        </TableCell>
-                      )}
+                      <TableCell align="right">
+                        {item.passwordChangedAt &&
+                          moment(item.passwordChangedAt).format(
+                            "DD-MM-YYYY HH:mm"
+                          )}
+                      </TableCell>
                     </TableRow>
                   );
                 })}
-              <>
-                <Dialog
-                  open={open}
-                  onClose={() => {
-                    setOpen(false);
-                  }}
-                >
-                  <DialogTitle
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    color="#408CD8"
-                  >
-                    <UpdateIcon color="info" style={{ marginRight: 5 }} />
-                    Update Estate
-                  </DialogTitle>
-                  <DialogContent>
-                    <TextField
-                      autoFocus
-                      margin="dense"
-                      id="name"
-                      label="Name Estate"
-                      type="text"
-                      fullWidth
-                      variant="outlined"
-                      defaultValue={nameEstate}
-                      onChange={(e) => {
-                        setNameEstate(e.target.value);
-                      }}
-                    />
-                    <FormControl>
-                      <FormLabel id="demo-row-radio-buttons-group-label">
-                        Status
-                      </FormLabel>
-                      <RadioGroup
-                        defaultValue={statusEstate}
-                        onChange={(e, value) => {
-                          const option = uniqueStatusEstate.find((estate) => {
-                            return estate.status === value;
-                          });
-                          setStatusName(option.status);
-                        }}
-                      >
-                        {uniqueStatusEstate.map((estate) => (
-                          <FormControlLabel
-                            key={estate._id}
-                            value={estate.status}
-                            control={<Radio />}
-                            label={estate.status}
-                          />
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      onClick={() => {
-                        setOpen(false);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        updateEstate(nameEstate, statusName, objUpdate);
-                        setOpen(false);
-                        toast.success("Cập nhật thành công");
-                        setRenderData(true);
-                      }}
-                    >
-                      Update
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </>
+
               {emptyRows > 0 && (
                 <TableRow
                   style={{
@@ -759,7 +486,7 @@ export default function EnhancedTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={estateData.length}
+          count={userData.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -772,4 +499,4 @@ export default function EnhancedTable() {
       />
     </Box>
   );
-}
+};

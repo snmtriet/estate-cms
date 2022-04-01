@@ -26,15 +26,10 @@ import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Container from "@mui/material/Container";
-import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
 
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -46,7 +41,7 @@ import { Context } from "../context/authContext";
 import cryptoJs from "crypto-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { DialogContentText, InputLabel, MenuItem, Select } from "@mui/material";
+import { DialogContentText } from "@mui/material";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -86,22 +81,10 @@ const headCells = [
     label: "Name",
   },
   {
-    id: "status",
+    id: "describe",
     numeric: true,
     disablePadding: false,
-    label: "Status",
-  },
-  {
-    id: "category",
-    numeric: true,
-    disablePadding: false,
-    label: "Category",
-  },
-  {
-    id: "updatedAt",
-    numeric: true,
-    disablePadding: false,
-    label: "updatedAt",
+    label: "Describe",
   },
   {
     id: "createdAt",
@@ -173,13 +156,11 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-export default function EnhancedTable() {
-  const { addEstate, updateEstate, deleteEstate, state } =
+export const Category = () => {
+  const { addCategory, deleteCategory, updateCategory } =
     React.useContext(Context);
-  console.log(state);
 
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [estateData, setEstateData] = React.useState([]);
   const [renderData, setRenderData] = React.useState(false);
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
@@ -189,11 +170,11 @@ export default function EnhancedTable() {
   const [role, setRole] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [open2, setOpen2] = React.useState(false);
-  const [nameEstate, setNameEstate] = React.useState("");
-  const [statusEstate, setStatusEstate] = React.useState("");
-  const [statusName, setStatusName] = React.useState("");
-  const [objUpdate, setObjUpdate] = React.useState({});
   const [categoryData, setCategoryData] = React.useState([]);
+  const [estateData, setEstateData] = React.useState([]);
+  const [nameCategory, setNameCategory] = React.useState("");
+  const [describeCategory, setDescribeCategory] = React.useState("");
+  const [idCategory, setIdCategory] = React.useState("");
 
   const cryptoData = (value, type) => {
     const bytes = cryptoJs.AES.decrypt(value, `secret ${type}`);
@@ -217,10 +198,10 @@ export default function EnhancedTable() {
           Authorization: `Bearer ${originalToken}`,
         },
       });
-      const dataEstate = await resEstate.data.data.estates;
-      const dataCategory = await resCategory.data.data.category;
-      setEstateData(dataEstate);
+      const dataCategory = resCategory.data.data.category;
+      const dataEstate = resEstate.data.data.estates;
       setCategoryData(dataCategory);
+      setEstateData(dataEstate);
       setRenderData(false);
     };
     getData();
@@ -234,7 +215,7 @@ export default function EnhancedTable() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = estateData.map((n) => n._id);
+      const newSelecteds = categoryData.map((n) => n._id);
       setSelected(newSelecteds);
       return;
     }
@@ -280,44 +261,41 @@ export default function EnhancedTable() {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - estateData.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - categoryData.length) : 0;
 
   const addEstateValidationSchema = yup.object().shape({
     name: yup.string().required("Name estate is required").trim(),
   });
 
-  const filterOptionsStatus = createFilterOptions({
-    matchFrom: "start",
-    stringify: (option) => option.status,
-  });
-  const filterOptionsCategory = createFilterOptions({
-    matchFrom: "start",
-    stringify: (option) => option.category.name,
-  });
-
-  const uniqueStatusEstate = [
-    ...new Map(estateData.map((item) => [item["status"], item])).values(),
-  ];
-  const uniqueCategoryEstate = [
-    ...new Map(
-      estateData.map((item) => [item.category["name"], item])
-    ).values(),
-  ];
+  const handleDeleteCategory = async (selected) => {
+    const filterCategoryBeforeDelete = selected.map((id) => {
+      const compareData = estateData.filter((item) => {
+        return id === item.category._id;
+      });
+      return compareData;
+    });
+    const isValid = filterCategoryBeforeDelete.every(
+      (item) => item.length === 0
+    );
+    if (isValid) {
+      setSelected([]);
+      deleteCategory(selected);
+      toast.success("Xóa thành công");
+      setOpen2(false);
+      setRenderData(true);
+    } else {
+      toast.warn("Thể loại này đang được sử dụng!");
+    }
+  };
 
   return (
     <Box fullWidth>
       <Formik
         validationSchema={addEstateValidationSchema}
-        initialValues={{ name: "", category: "" }}
+        initialValues={{ name: "" }}
         onSubmit={(values) => {
-          addEstate(values.name, values.category);
-          if (values.category === "") {
-            toast.warn("Chưa chọn thể loại");
-          } else {
-            toast.success("Thêm thành công");
-            values.name = "";
-            values.category = "";
-          }
+          addCategory(values.name);
+          values.name = "";
         }}
       >
         {({
@@ -344,7 +322,7 @@ export default function EnhancedTable() {
                   margin="normal"
                   fullWidth
                   id="name"
-                  label="Estate name"
+                  label="Category name"
                   name="name"
                   autoComplete="name"
                   value={values.name}
@@ -352,51 +330,6 @@ export default function EnhancedTable() {
                   onBlur={handleBlur}
                   autoFocus
                 />
-                {errors.email && (
-                  <Typography
-                    fontSize={16}
-                    component="h1"
-                    variant="h5"
-                    color="#d32f2f"
-                  >
-                    {errors.email}
-                  </Typography>
-                )}
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  mt: 0.5,
-                }}
-              >
-                <FormControl sx={{ mr: 1, ml: 1, mt: 0.5, minWidth: 120 }}>
-                  <InputLabel id="demo-simple-select-autowidth-label">
-                    Category
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-autowidth-label"
-                    id="demo-simple-select-autowidth"
-                    value={values.category}
-                    name="category"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    autoWidth
-                    label="Category"
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {categoryData.map((item) => {
-                      return (
-                        <MenuItem key={item._id} value={item._id}>
-                          {item.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
               </Box>
               <Box
                 sx={{
@@ -413,11 +346,12 @@ export default function EnhancedTable() {
                   onClick={() => {
                     setRenderData(true);
                     handleSubmit();
+                    toast.success("Thêm thành công");
                   }}
                   disabled={!isValid}
                   sx={{ mt: 2, mb: 1 }}
                 >
-                  Add Estate
+                  Add Category
                 </Button>
                 <ToastContainer autoClose={2000} />
               </Box>
@@ -455,7 +389,7 @@ export default function EnhancedTable() {
               id="tableTitle"
               component="div"
             >
-              Estate
+              Category
             </Typography>
           )}
 
@@ -485,11 +419,11 @@ export default function EnhancedTable() {
                   color="error"
                 >
                   <DeleteIcon color="error" />
-                  Delete Estate
+                  Delete Category
                 </DialogTitle>
                 <DialogContent>
                   <DialogContentText fontWeight="bold" fontSize={18}>
-                    Hành động này sẽ xóa vĩnh viễn tài sản. Bạn có thực sự muốn
+                    Hành động này sẽ xóa vĩnh viễn thể loại. Bạn có thực sự muốn
                     xóa ?
                   </DialogContentText>
                 </DialogContent>
@@ -504,11 +438,7 @@ export default function EnhancedTable() {
                   </Button>
                   <Button
                     onClick={() => {
-                      setSelected([]);
-                      deleteEstate(selected);
-                      toast.success("Xóa thành công");
-                      setOpen2(false);
-                      setRenderData(true);
+                      handleDeleteCategory(selected);
                     }}
                   >
                     Delete
@@ -518,69 +448,9 @@ export default function EnhancedTable() {
             </>
           ) : (
             <Tooltip title="Filter list">
-              <>
-                <Autocomplete
-                  id="filter-status"
-                  options={uniqueStatusEstate}
-                  isOptionEqualToValue={(option, value) =>
-                    option.status === value.status
-                  }
-                  getOptionLabel={(option) => option.status}
-                  filterOptions={filterOptionsStatus}
-                  sx={{ width: 300 }}
-                  onChange={(e, value) => {
-                    if (value) {
-                      const filterData = estateData.filter((item) => {
-                        return item.status === value.status;
-                      });
-                      setEstateData(filterData);
-                    } else {
-                      setRenderData(true);
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="filterStatus"
-                      label="Filter status"
-                      variant="outlined"
-                      fullWidth
-                    />
-                  )}
-                />
-                <Autocomplete
-                  id="filter-category"
-                  options={uniqueCategoryEstate}
-                  isOptionEqualToValue={(option, value) =>
-                    option.category.name === value.category.name
-                  }
-                  getOptionLabel={(option) => option.category.name}
-                  filterOptions={filterOptionsCategory}
-                  sx={{ width: 400, ml: 1 }}
-                  onChange={(e, value) => {
-                    if (value) {
-                      const filterData = estateData.filter((item) => {
-                        return item.category.name === value.category.name;
-                      });
-                      setEstateData(filterData);
-                    } else {
-                      setRenderData(true);
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="filterCategory"
-                      label="Filter category"
-                      variant="outlined"
-                      fullWidth
-                    />
-                  )}
-                />
-                <IconButton>
-                  <FilterListIcon />
-                </IconButton>
-              </>
+              <IconButton>
+                <FilterListIcon />
+              </IconButton>
             </Tooltip>
           )}
         </Toolbar>
@@ -597,10 +467,10 @@ export default function EnhancedTable() {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={estateData.length}
+              rowCount={categoryData.length}
             />
             <TableBody>
-              {stableSort(estateData, getComparator(order, orderBy))
+              {stableSort(categoryData, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => {
                   const isItemSelected = isSelected(item._id);
@@ -609,12 +479,9 @@ export default function EnhancedTable() {
                   return (
                     <TableRow
                       hover
-                      // onClick={(event) => handleClick(event, item._id)}
                       role="checkbox"
-                      // aria-checked={isItemSelected}
                       tabIndex={-1}
                       key={item._id}
-                      // selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">
                         <Checkbox
@@ -636,12 +503,7 @@ export default function EnhancedTable() {
                       >
                         {item.name}
                       </TableCell>
-                      <TableCell align="right">{item.status}</TableCell>
-                      <TableCell align="right">{item.category.name}</TableCell>
-                      <TableCell align="right">
-                        {" "}
-                        {moment(item.updatedAt).format("DD-MM-YYYY HH:mm")}
-                      </TableCell>
+                      <TableCell align="right">{item.describe}</TableCell>
                       <TableCell align="right">
                         {" "}
                         {moment(item.createdAt).format("DD-MM-YYYY HH:mm")}
@@ -651,14 +513,16 @@ export default function EnhancedTable() {
                           <IconButton
                             color="primary"
                             onClick={() => {
-                              const EstateUpdateById = estateData.filter(
+                              const CategoryUpdateById = categoryData.filter(
                                 (estate) => {
                                   return estate._id === item._id;
                                 }
                               );
-                              setObjUpdate(EstateUpdateById);
-                              setNameEstate(EstateUpdateById[0].name);
-                              setStatusEstate(EstateUpdateById[0].status);
+                              setNameCategory(CategoryUpdateById[0].name);
+                              setIdCategory(CategoryUpdateById[0]._id);
+                              setDescribeCategory(
+                                CategoryUpdateById[0].describe
+                              );
                               setOpen(true);
                             }}
                           >
@@ -683,45 +547,35 @@ export default function EnhancedTable() {
                     color="#408CD8"
                   >
                     <UpdateIcon color="info" style={{ marginRight: 5 }} />
-                    Update Estate
+                    Update category
                   </DialogTitle>
                   <DialogContent>
                     <TextField
                       autoFocus
                       margin="dense"
                       id="name"
-                      label="Name Estate"
+                      label="Name category"
                       type="text"
                       fullWidth
                       variant="outlined"
-                      defaultValue={nameEstate}
+                      defaultValue={nameCategory}
                       onChange={(e) => {
-                        setNameEstate(e.target.value);
+                        setNameCategory(e.target.value);
                       }}
                     />
-                    <FormControl>
-                      <FormLabel id="demo-row-radio-buttons-group-label">
-                        Status
-                      </FormLabel>
-                      <RadioGroup
-                        defaultValue={statusEstate}
-                        onChange={(e, value) => {
-                          const option = uniqueStatusEstate.find((estate) => {
-                            return estate.status === value;
-                          });
-                          setStatusName(option.status);
-                        }}
-                      >
-                        {uniqueStatusEstate.map((estate) => (
-                          <FormControlLabel
-                            key={estate._id}
-                            value={estate.status}
-                            control={<Radio />}
-                            label={estate.status}
-                          />
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      id="describe"
+                      label="Describe category"
+                      type="text"
+                      fullWidth
+                      variant="outlined"
+                      defaultValue={describeCategory}
+                      onChange={(e) => {
+                        setDescribeCategory(e.target.value);
+                      }}
+                    />
                   </DialogContent>
                   <DialogActions>
                     <Button
@@ -733,7 +587,11 @@ export default function EnhancedTable() {
                     </Button>
                     <Button
                       onClick={() => {
-                        updateEstate(nameEstate, statusName, objUpdate);
+                        updateCategory(
+                          nameCategory,
+                          describeCategory,
+                          idCategory
+                        );
                         setOpen(false);
                         toast.success("Cập nhật thành công");
                         setRenderData(true);
@@ -759,7 +617,7 @@ export default function EnhancedTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={estateData.length}
+          count={categoryData.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -772,4 +630,4 @@ export default function EnhancedTable() {
       />
     </Box>
   );
-}
+};

@@ -4,6 +4,7 @@ import { Switch, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
 import { Context } from "./context/authContext";
+import { InventoryDetail } from "./components/InventoryDetail";
 
 export default function App() {
   const { tryLocalSignin } = useContext(Context);
@@ -14,9 +15,13 @@ export default function App() {
 
   return (
     <Switch>
-      <Route exact path="/" component={Dashboard} />
       <Route path="/signin" component={SignIn} />
-      <Route path="/addestate" component={Dashboard} />
+      <Route path="/category" component={Dashboard} />
+      <Route path="/users" component={Dashboard} />
+      <Route path="/faculty" component={Dashboard} />
+      <Route path="/inventories/:inventoryId" component={InventoryDetail} />
+      <Route path="/inventories" component={Dashboard} />
+      <Route exact path="/" component={Dashboard} />
     </Switch>
   );
 }

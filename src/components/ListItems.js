@@ -4,11 +4,11 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import LayersIcon from "@mui/icons-material/Layers";
 import LogoutIcon from "@mui/icons-material/Logout";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import UpdateIcon from "@mui/icons-material/Update";
 import InventoryIcon from "@mui/icons-material/Inventory";
+import CategoryIcon from "@mui/icons-material/Category";
+import SupervisedUserCircleIcon from "@mui/icons-material/SupervisedUserCircle";
+import GroupWorkIcon from "@mui/icons-material/GroupWork";
 
 import { Context } from "../context/authContext";
 import { useHistory } from "react-router-dom";
@@ -25,35 +25,47 @@ export const MainListItems = () => {
         <ListItemIcon>
           <DashboardIcon />
         </ListItemIcon>
-        <ListItemText primary="Dashboard" />
+        <ListItemText primary="Estate" />
       </ListItemButton>
       <ListItemButton
         onClick={() => {
-          history.push("/addestate");
+          history.push("/users");
         }}
       >
         <ListItemIcon>
-          <AddCircleIcon />
+          <SupervisedUserCircleIcon />
         </ListItemIcon>
-        <ListItemText primary="Add Estate" />
+        <ListItemText primary="Users" />
       </ListItemButton>
-      <ListItemButton>
+      <ListItemButton
+        onClick={() => {
+          history.push("/faculty");
+        }}
+      >
         <ListItemIcon>
-          <UpdateIcon />
+          <GroupWorkIcon />
         </ListItemIcon>
-        <ListItemText primary="Update Estate" />
+        <ListItemText primary="Faculty" />
       </ListItemButton>
-      <ListItemButton>
+      <ListItemButton
+        onClick={() => {
+          history.push("/category");
+        }}
+      >
+        <ListItemIcon>
+          <CategoryIcon />
+        </ListItemIcon>
+        <ListItemText primary="Category" />
+      </ListItemButton>
+      <ListItemButton
+        onClick={() => {
+          history.push("/inventories");
+        }}
+      >
         <ListItemIcon>
           <InventoryIcon />
         </ListItemIcon>
-        <ListItemText primary="Inventory" />
-      </ListItemButton>
-      <ListItemButton>
-        <ListItemIcon>
-          <LayersIcon />
-        </ListItemIcon>
-        <ListItemText primary="Integrations" />
+        <ListItemText primary="Inventories" />
       </ListItemButton>
     </>
   );

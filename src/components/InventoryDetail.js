@@ -16,15 +16,17 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import FaceIcon from "@mui/icons-material/Face";
 import { MainListItems, SecondaryListItems } from "./ListItems";
-import DataTable from "./DataTable";
-import { useLocation } from "react-router-dom";
-import { Inventory } from "./Inventory";
+import { useParams } from "react-router-dom";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
 
 import Cookies from "js-cookie";
-import { Users } from "./Users";
-import { Category } from "./Category";
-import { Faculty } from "./Faculty";
-import { InventoryDetail } from "./InventoryDetail";
+import estate from "../axios/estate";
 
 const drawerWidth = 240;
 
@@ -77,7 +79,12 @@ const mdTheme = createTheme();
 function DashboardContent() {
   const [open, setOpen] = React.useState(true);
   const [name, setName] = React.useState("");
-  const location = useLocation();
+  const [page, setPage] = React.useState(0);
+  const [rows, setRows] = React.useState([]);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const { inventoryId } = useParams();
+
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -86,9 +93,64 @@ function DashboardContent() {
     const getName = async () => {
       const name = await Cookies.get("name");
       setName(name);
+      const inventoriesData = await estate.get(`/inventories/${inventoryId}`);
+
+      const rows = inventoriesData.data.data.inventory.checkList.map((item) => {
+        console.log(item);
+        return {
+          name: item.name,
+          soluong: item.totalEstate,
+          dm: 0,
+          ...item.statistics,
+        };
+      });
+      setRows(rows);
     };
     getName();
-  });
+  }, []);
+
+  const columns = [
+    { id: "name", label: "Loại", minWidth: 170 },
+    {
+      id: "soluong",
+      label: "Sô lượng theo kk thực tế",
+      minWidth: 20,
+    },
+    {
+      id: "dsd",
+      label: "Đang sử dụng",
+      minWidth: 20,
+    },
+    {
+      id: "hhxtl",
+      label: "Hư hỏng xin thanh lý",
+      minWidth: 20,
+    },
+    {
+      id: "hhcsc",
+      label: "Hư hỏng chờ sửa chữa",
+      minWidth: 20,
+    },
+    {
+      id: "kncsd",
+      label: "Không nhu cầu sử dụng",
+      minWidth: 20,
+    },
+    {
+      id: "dm",
+      label: "Đã mất",
+      minWidth: 20,
+    },
+  ];
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -172,11 +234,73 @@ function DashboardContent() {
                     flexDirection: "column",
                   }}
                 >
-                  {location.pathname === "/users" && <Users />}
-                  {location.pathname === "/category" && <Category />}
-                  {location.pathname === "/faculty" && <Faculty />}
-                  {location.pathname === "/inventories" && <Inventory />}
-                  {location.pathname === "/" && <DataTable />}
+                  <Typography fontSize={24}>Inventory detail </Typography>
+                  <Paper sx={{ width: "100%" }}>
+                    <TableContainer sx={{ maxHeight: 440 }}>
+                      <Table stickyHeader aria-label="sticky table">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell align="center" colSpan={2}></TableCell>
+                            <TableCell align="center" colSpan={5}>
+                              Hiện trạng tài sản cố định
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            {columns.map((column) => (
+                              <TableCell
+                                key={column.id}
+                                align={column.align}
+                                style={{ top: 57, minWidth: column.minWidth }}
+                              >
+                                {column.label}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {rows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <TableRow
+                                  hover
+                                  role="checkbox"
+                                  tabIndex={-1}
+                                  key={index}
+                                >
+                                  {columns.map((column) => {
+                                    const value = row[column.id];
+                                    return (
+                                      <TableCell
+                                        key={column.id}
+                                        align={column.align}
+                                      >
+                                        {column.format &&
+                                        typeof value === "number"
+                                          ? column.format(value)
+                                          : value}
+                                      </TableCell>
+                                    );
+                                  })}
+                                </TableRow>
+                              );
+                            })}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                    <TablePagination
+                      rowsPerPageOptions={[10, 25, 100]}
+                      component="div"
+                      count={rows.length}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      onPageChange={handleChangePage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                  </Paper>
                 </Paper>
               </Grid>
             </Grid>
@@ -187,6 +311,6 @@ function DashboardContent() {
   );
 }
 
-export default function Dashboard() {
+export const InventoryDetail = () => {
   return <DashboardContent />;
-}
+};
