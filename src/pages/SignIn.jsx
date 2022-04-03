@@ -29,8 +29,6 @@ const loginValidationSchema = yup.object().shape({
 export default function SignIn() {
   const { signin, state } = useContext(Context);
 
-  console.log("state login: ", state);
-
   if (state.token) {
     return <Redirect to="/" />;
   }

@@ -11,19 +11,18 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
-import Paper from "@mui/material/Paper";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import FaceIcon from "@mui/icons-material/Face";
 import { MainListItems, SecondaryListItems } from "./ListItems";
 import { useParams } from "react-router-dom";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
+import moment from "moment";
+import {
+  DataGrid,
+  GridToolbarExport,
+  GridToolbarContainer,
+  viVN,
+} from "@mui/x-data-grid";
 
 import Cookies from "js-cookie";
 import estate from "../axios/estate";
@@ -79,15 +78,9 @@ const mdTheme = createTheme();
 function DashboardContent() {
   const [open, setOpen] = React.useState(true);
   const [name, setName] = React.useState("");
-  const [page, setPage] = React.useState(0);
   const [rows, setRows] = React.useState([]);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const { inventoryId } = useParams();
-
-  const toggleDrawer = () => {
-    setOpen(!open);
-  };
 
   React.useEffect(() => {
     const getName = async () => {
@@ -95,62 +88,60 @@ function DashboardContent() {
       setName(name);
       const inventoriesData = await estate.get(`/inventories/${inventoryId}`);
 
-      const rows = inventoriesData.data.data.inventory.checkList.map((item) => {
-        console.log(item);
-        return {
-          name: item.name,
-          soluong: item.totalEstate,
-          dm: 0,
-          ...item.statistics,
-        };
-      });
+      const rows = inventoriesData.data.data.inventory.checkList.map(
+        (item, index) => {
+          return {
+            id: index + 1,
+            name: item.name,
+            soluong: item.totalEstate,
+            dm: 0,
+            ...item.statistics,
+          };
+        }
+      );
       setRows(rows);
     };
     getName();
   }, []);
 
   const columns = [
-    { id: "name", label: "Loại", minWidth: 170 },
+    { field: "name", headerName: "Loại", width: 250 },
     {
-      id: "soluong",
-      label: "Sô lượng theo kk thực tế",
-      minWidth: 20,
+      field: "soluong",
+      headerName: "Sô lượng",
+      type: "number",
     },
     {
-      id: "dsd",
-      label: "Đang sử dụng",
-      minWidth: 20,
+      field: "dsd",
+      headerName: "Đang sử dụng",
+      type: "number",
+      width: 250,
     },
     {
-      id: "hhxtl",
-      label: "Hư hỏng xin thanh lý",
-      minWidth: 20,
+      field: "hhxtl",
+      headerName: "Hư hỏng xin thanh lý",
+      type: "number",
+      width: 250,
     },
     {
-      id: "hhcsc",
-      label: "Hư hỏng chờ sửa chữa",
-      minWidth: 20,
+      field: "hhcsc",
+      headerName: "Hư hỏng chờ sửa chữa",
+      type: "number",
+      width: 250,
     },
     {
-      id: "kncsd",
-      label: "Không nhu cầu sử dụng",
-      minWidth: 20,
+      field: "dm",
+      headerName: "Đã mất",
+      type: "number",
+      width: 250,
+      editable: true,
     },
     {
-      id: "dm",
-      label: "Đã mất",
-      minWidth: 20,
+      field: "note",
+      headerName: "Ghi chú",
+      width: 250,
     },
   ];
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -166,7 +157,9 @@ function DashboardContent() {
               edge="start"
               color="inherit"
               aria-label="open drawer"
-              onClick={toggleDrawer}
+              onClick={() => {
+                setOpen(!open);
+              }}
               sx={{
                 marginRight: "36px",
                 ...(open && { display: "none" }),
@@ -200,7 +193,11 @@ function DashboardContent() {
               px: [1],
             }}
           >
-            <IconButton onClick={toggleDrawer}>
+            <IconButton
+              onClick={() => {
+                setOpen(!open);
+              }}
+            >
               <ChevronLeftIcon />
             </IconButton>
           </Toolbar>
@@ -227,87 +224,39 @@ function DashboardContent() {
           <Container maxWidth="2xl" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Typography fontSize={24}>Inventory detail </Typography>
-                  <Paper sx={{ width: "100%" }}>
-                    <TableContainer sx={{ maxHeight: 440 }}>
-                      <Table stickyHeader aria-label="sticky table">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell align="center" colSpan={2}></TableCell>
-                            <TableCell align="center" colSpan={5}>
-                              Hiện trạng tài sản cố định
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            {columns.map((column) => (
-                              <TableCell
-                                key={column.id}
-                                align={column.align}
-                                style={{ top: 57, minWidth: column.minWidth }}
-                              >
-                                {column.label}
-                              </TableCell>
-                            ))}
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {rows
-                            .slice(
-                              page * rowsPerPage,
-                              page * rowsPerPage + rowsPerPage
-                            )
-                            .map((row, index) => {
-                              return (
-                                <TableRow
-                                  hover
-                                  role="checkbox"
-                                  tabIndex={-1}
-                                  key={index}
-                                >
-                                  {columns.map((column) => {
-                                    const value = row[column.id];
-                                    return (
-                                      <TableCell
-                                        key={column.id}
-                                        align={column.align}
-                                      >
-                                        {column.format &&
-                                        typeof value === "number"
-                                          ? column.format(value)
-                                          : value}
-                                      </TableCell>
-                                    );
-                                  })}
-                                </TableRow>
-                              );
-                            })}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                    <TablePagination
-                      rowsPerPageOptions={[10, 25, 100]}
-                      component="div"
-                      count={rows.length}
-                      rowsPerPage={rowsPerPage}
-                      page={page}
-                      onPageChange={handleChangePage}
-                      onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                  </Paper>
-                </Paper>
+                <div style={{ height: 300, width: "100%" }}>
+                  <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    components={{
+                      Toolbar: CustomToolbar,
+                    }}
+                    experimentalFeatures={{ newEditingApi: true }}
+                    localeText={
+                      viVN.components.MuiDataGrid.defaultProps.localeText
+                    }
+                  />
+                </div>
               </Grid>
             </Grid>
           </Container>
         </Box>
       </Box>
     </ThemeProvider>
+  );
+}
+
+function CustomToolbar() {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarExport
+        csvOptions={{
+          fileName: `Kiểm kê ngày ${moment(Date.now()).format("DD-MM-YYYY")}`,
+          delimiter: ";",
+          utf8WithBom: true,
+        }}
+      />
+    </GridToolbarContainer>
   );
 }
 
