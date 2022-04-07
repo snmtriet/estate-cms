@@ -174,8 +174,7 @@ EnhancedTableHead.propTypes = {
 };
 
 export default function EnhancedTable() {
-  const { addEstate, updateEstate, deleteEstate, state } =
-    React.useContext(Context);
+  const { addEstate, updateEstate, deleteEstate } = React.useContext(Context);
 
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [estateData, setEstateData] = React.useState([]);

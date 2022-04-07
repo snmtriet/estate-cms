@@ -24,7 +24,6 @@ import Cookies from "js-cookie";
 import { Users } from "./Users";
 import { Category } from "./Category";
 import { Faculty } from "./Faculty";
-import { InventoryDetail } from "./InventoryDetail";
 
 const drawerWidth = 240;
 

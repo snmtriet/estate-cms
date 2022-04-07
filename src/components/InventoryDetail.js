@@ -102,7 +102,7 @@ function DashboardContent() {
       setRows(rows);
     };
     getName();
-  }, []);
+  }, [inventoryId]);
 
   const columns = [
     { field: "name", headerName: "Loại", width: 250 },
@@ -251,7 +251,9 @@ function CustomToolbar() {
     <GridToolbarContainer>
       <GridToolbarExport
         csvOptions={{
-          fileName: `Kiểm kê ngày ${moment(Date.now()).format("DD-MM-YYYY")}`,
+          fileName: `Bang KiemKeTS_KCNTT ${moment(Date.now()).format(
+            "DD-MM-YYYY"
+          )}`,
           delimiter: ";",
           utf8WithBom: true,
         }}
