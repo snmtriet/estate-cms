@@ -11,7 +11,7 @@ export default function App() {
 
   useEffect(() => {
     tryLocalSignin();
-  }, [tryLocalSignin]);
+  }, []);
 
   return (
     <Switch>

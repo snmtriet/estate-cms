@@ -422,14 +422,13 @@ export const Faculty = () => {
                           describeFaculty,
                           idFacultyUpdate
                         );
-                        setOpen(false);
                         toast.success("Cập nhật thành công");
+                        setOpen(false);
                         setRenderData(true);
                       }}
                     >
                       Update
                     </Button>
-                    <ToastContainer autoClose={2000} />
                   </DialogActions>
                 </Dialog>
               </>
@@ -445,6 +444,7 @@ export const Faculty = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        <ToastContainer autoClose={2000} />
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

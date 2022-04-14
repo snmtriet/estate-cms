@@ -224,7 +224,7 @@ function DashboardContent() {
           <Container maxWidth="2xl" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <div style={{ height: 300, width: "100%" }}>
+                <div style={{ height: 500, width: "100%" }}>
                   <DataGrid
                     rows={rows}
                     columns={columns}
