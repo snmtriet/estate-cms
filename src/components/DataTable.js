@@ -173,8 +173,17 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
+const enumStatus = [
+  { _id: 1, status: "Đã mất" },
+  { _id: 2, status: "Đang sử dụng" },
+  { _id: 3, status: "Hư hỏng chờ sửa chữa" },
+  { _id: 4, status: "Hư hỏng xin thanh lý" },
+  { _id: 5, status: "Không nhu cầu sử dụng" },
+];
+
 export default function EnhancedTable() {
-  const { addEstate, updateEstate, deleteEstate } = React.useContext(Context);
+  const { state, addEstate, updateEstate, deleteEstate } =
+    React.useContext(Context);
 
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [estateData, setEstateData] = React.useState([]);
@@ -324,6 +333,7 @@ export default function EnhancedTable() {
           handleSubmit,
           values,
           errors,
+          isSubmitting,
           isValid,
         }) => (
           <Container component="main">
@@ -704,13 +714,14 @@ export default function EnhancedTable() {
                       <RadioGroup
                         defaultValue={statusEstate}
                         onChange={(e, value) => {
-                          const option = uniqueStatusEstate.find((estate) => {
+                          const option = enumStatus.find((estate) => {
                             return estate.status === value;
                           });
+                          console.log({ option });
                           setStatusName(option.status);
                         }}
                       >
-                        {uniqueStatusEstate.map((estate) => (
+                        {enumStatus.map((estate) => (
                           <FormControlLabel
                             key={estate._id}
                             value={estate.status}
