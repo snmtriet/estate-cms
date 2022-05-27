@@ -1,8 +1,11 @@
 import * as React from "react";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import ListSubheader from "@mui/material/ListSubheader";
+import {
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+} from "@mui/material";
+
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LogoutIcon from "@mui/icons-material/Logout";
 import InventoryIcon from "@mui/icons-material/Inventory";
@@ -66,6 +69,16 @@ export const MainListItems = () => {
           <InventoryIcon />
         </ListItemIcon>
         <ListItemText primary="Inventories" />
+      </ListItemButton>
+      <ListItemButton
+        onClick={() => {
+          history.push("/qr");
+        }}
+      >
+        <ListItemIcon>
+          <DashboardIcon />
+        </ListItemIcon>
+        <ListItemText primary="Create QR" />
       </ListItemButton>
     </>
   );

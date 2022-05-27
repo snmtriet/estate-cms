@@ -205,6 +205,9 @@ export const Users = () => {
       setRenderData(false);
     };
     getData();
+    return () => {
+      setUserData([]);
+    };
   }, [renderData]);
 
   const handleRequestSort = (event, property) => {

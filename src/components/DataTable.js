@@ -1,52 +1,57 @@
 import * as React from "react";
 import PropTypes from "prop-types";
 import { alpha } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UpdateIcon from "@mui/icons-material/Update";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import Container from "@mui/material/Container";
-import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
-
 import { Formik } from "formik";
 import * as yup from "yup";
-
-import estateApi from "../axios/estate";
 import Cookies from "js-cookie";
 import moment from "moment";
-import { Context } from "../context/authContext";
 import cryptoJs from "crypto-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { DialogContentText, InputLabel, MenuItem, Select } from "@mui/material";
+import { createFilterOptions } from "@mui/material/Autocomplete";
+import {
+  Autocomplete,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TableSortLabel,
+  Toolbar,
+  Typography,
+  Paper,
+  Checkbox,
+  IconButton,
+  Tooltip,
+  FormControlLabel,
+  Switch,
+  DialogActions,
+  Button,
+  CssBaseline,
+  TextField,
+  Container,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Radio,
+  RadioGroup,
+  FormControl,
+  FormLabel,
+  DialogContentText,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
+
+import estateApi from "../axios/estate";
+import { Context } from "../context/authContext";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -182,8 +187,7 @@ const enumStatus = [
 ];
 
 export default function EnhancedTable() {
-  const { state, addEstate, updateEstate, deleteEstate } =
-    React.useContext(Context);
+  const { addEstate, updateEstate, deleteEstate } = React.useContext(Context);
 
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [estateData, setEstateData] = React.useState([]);
@@ -231,6 +235,10 @@ export default function EnhancedTable() {
       setRenderData(false);
     };
     getData();
+    return () => {
+      setEstateData([]);
+      setCategoryData([]);
+    };
   }, [renderData]);
 
   const handleRequestSort = (event, property) => {
@@ -333,7 +341,6 @@ export default function EnhancedTable() {
           handleSubmit,
           values,
           errors,
-          isSubmitting,
           isValid,
         }) => (
           <Container component="main">

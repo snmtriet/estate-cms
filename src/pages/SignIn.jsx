@@ -1,19 +1,17 @@
 import React, { useContext } from "react";
 import { Formik } from "formik";
 import * as yup from "yup";
-
 import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
-
+import LoadingButton from "@mui/lab/LoadingButton";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import { Redirect } from "react-router-dom";
 
 import { Context } from "../context/authContext";
-import { Redirect } from "react-router-dom";
 
 const loginValidationSchema = yup.object().shape({
   email: yup
@@ -45,6 +43,7 @@ export default function SignIn() {
         values,
         errors,
         isValid,
+        isSubmitting,
       }) => (
         <Container component="main" maxWidth="xs">
           <CssBaseline />
@@ -117,7 +116,8 @@ export default function SignIn() {
                   {state.errMessage}
                 </Alert>
               )}
-              <Button
+              <LoadingButton
+                loading={isSubmitting}
                 type="submit"
                 fullWidth
                 variant="contained"
@@ -126,7 +126,7 @@ export default function SignIn() {
                 sx={{ mt: 3, mb: 2 }}
               >
                 Đăng nhập
-              </Button>
+              </LoadingButton>
             </Box>
           </Box>
         </Container>

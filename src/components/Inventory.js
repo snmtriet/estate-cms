@@ -156,6 +156,9 @@ export const Inventory = () => {
       setRenderData(false);
     };
     getData();
+    return () => {
+      setInventoryData([]);
+    };
   }, [renderData]);
 
   const handleRequestSort = (event, property) => {

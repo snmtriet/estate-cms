@@ -205,6 +205,10 @@ export const Category = () => {
       setRenderData(false);
     };
     getData();
+    return () => {
+      setCategoryData([]);
+      setEstateData([]);
+    };
   }, [renderData]);
 
   const handleRequestSort = (event, property) => {

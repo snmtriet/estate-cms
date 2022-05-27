@@ -11,6 +11,7 @@ export default function App() {
 
   useEffect(() => {
     tryLocalSignin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -21,6 +22,7 @@ export default function App() {
       <Route path="/faculty" component={Dashboard} />
       <Route path="/inventories/:inventoryId" component={InventoryDetail} />
       <Route path="/inventories" component={Dashboard} />
+      <Route path="/qr" component={Dashboard} />
       <Route exact path="/" component={Dashboard} />
     </Switch>
   );
