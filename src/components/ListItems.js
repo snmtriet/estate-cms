@@ -70,16 +70,6 @@ export const MainListItems = () => {
         </ListItemIcon>
         <ListItemText primary="Inventories" />
       </ListItemButton>
-      <ListItemButton
-        onClick={() => {
-          history.push("/qr");
-        }}
-      >
-        <ListItemIcon>
-          <DashboardIcon />
-        </ListItemIcon>
-        <ListItemText primary="Create QR" />
-      </ListItemButton>
     </>
   );
 };

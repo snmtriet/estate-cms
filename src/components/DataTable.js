@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { alpha } from "@mui/material/styles";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UpdateIcon from "@mui/icons-material/Update";
+import QrCodeIcon from "@mui/icons-material/QrCode";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import { Formik } from "formik";
@@ -49,6 +50,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
+import QRCode from "qrcode.react";
 
 import estateApi from "../axios/estate";
 import { Context } from "../context/authContext";
@@ -199,12 +201,14 @@ export default function EnhancedTable() {
   const [dense, setDense] = React.useState(false);
   const [role, setRole] = React.useState("");
   const [open, setOpen] = React.useState(false);
+  const [qrOpen, setQrOpen] = React.useState(false);
   const [open2, setOpen2] = React.useState(false);
   const [nameEstate, setNameEstate] = React.useState("");
   const [statusEstate, setStatusEstate] = React.useState("");
   const [statusName, setStatusName] = React.useState("");
   const [objUpdate, setObjUpdate] = React.useState({});
   const [categoryData, setCategoryData] = React.useState([]);
+  const [qrValue, setQrValue] = React.useState({});
 
   const cryptoData = (value, type) => {
     const bytes = cryptoJs.AES.decrypt(value, `secret ${type}`);
@@ -318,6 +322,20 @@ export default function EnhancedTable() {
       estateData.map((item) => [item.category["name"], item])
     ).values(),
   ];
+
+  // download QR code
+  const downloadQRCode = (name) => {
+    const qrCodeURL = document
+      .getElementById("qrCodeEl")
+      .toDataURL("image/png", 1.0)
+      .replace("image/png", "image/octet-stream");
+    let aEl = document.createElement("a");
+    aEl.href = qrCodeURL;
+    aEl.download = `${name}.png`;
+    document.body.appendChild(aEl);
+    aEl.click();
+    document.body.removeChild(aEl);
+  };
 
   return (
     <Box fullWidth>
@@ -661,6 +679,17 @@ export default function EnhancedTable() {
                         {" "}
                         {moment(item.createdAt).format("DD-MM-YYYY HH:mm")}
                       </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            setQrOpen(true);
+                            setQrValue({ id: item._id, name: item.name });
+                          }}
+                        >
+                          <QrCodeIcon />
+                        </IconButton>
+                      </TableCell>
                       {role === "admin" && (
                         <TableCell align="right">
                           <IconButton
@@ -685,6 +714,66 @@ export default function EnhancedTable() {
                   );
                 })}
               <>
+                {/* qr generate open */}
+                <Dialog
+                  open={qrOpen}
+                  onClose={() => {
+                    setQrOpen(false);
+                  }}
+                >
+                  <DialogTitle
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    color="#408CD8"
+                  >
+                    <QrCodeIcon color="info" style={{ marginRight: 5 }} />
+                    QR Estate
+                  </DialogTitle>
+                  <DialogContent
+                    sx={{
+                      minWidth: 350,
+                    }}
+                  >
+                    <Box
+                      style={{
+                        height: "auto",
+                        margin: "0 auto",
+                        width: "100%",
+                      }}
+                    >
+                      <QRCode
+                        id="qrCodeEl"
+                        size={256}
+                        style={{
+                          height: "auto",
+                          maxWidth: "100%",
+                          width: "100%",
+                        }}
+                        value={qrValue.id}
+                        viewBox={`0 0 256 256`}
+                      />
+                    </Box>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={() => {
+                        setQrOpen(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        downloadQRCode(qrValue.name);
+                      }}
+                    >
+                      Download
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+                {/* dialog update estate */}
                 <Dialog
                   open={open}
                   onClose={() => {

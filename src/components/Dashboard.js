@@ -24,7 +24,6 @@ import Cookies from "js-cookie";
 import { Users } from "./Users";
 import { Category } from "./Category";
 import { Faculty } from "./Faculty";
-import QrCode from "./QrCode";
 
 const drawerWidth = 240;
 
@@ -176,7 +175,6 @@ function DashboardContent() {
                   {location.pathname === "/category" && <Category />}
                   {location.pathname === "/faculty" && <Faculty />}
                   {location.pathname === "/inventories" && <Inventory />}
-                  {location.pathname === "/qr" && <QrCode />}
                   {location.pathname === "/" && <DataTable />}
                 </Paper>
               </Grid>
