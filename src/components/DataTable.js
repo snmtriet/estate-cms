@@ -199,7 +199,6 @@ export default function EnhancedTable() {
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
-  const [role, setRole] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [qrOpen, setQrOpen] = React.useState(false);
   const [open2, setOpen2] = React.useState(false);
@@ -218,10 +217,7 @@ export default function EnhancedTable() {
   React.useEffect(() => {
     const getData = async () => {
       const token = await Cookies.get("auth");
-      const role = await Cookies.get("role");
-      const originalRole = cryptoData(role, "role");
       const originalToken = cryptoData(token, "token");
-      setRole(originalRole);
       const resEstate = await estateApi.get("/estates", {
         headers: {
           Authorization: `Bearer ${originalToken}`,
@@ -492,7 +488,7 @@ export default function EnhancedTable() {
             </Typography>
           )}
 
-          {role === "admin" && selected.length > 0 ? (
+          {selected.length > 0 ? (
             <>
               <Tooltip title="Delete">
                 <IconButton
@@ -690,26 +686,24 @@ export default function EnhancedTable() {
                           <QrCodeIcon />
                         </IconButton>
                       </TableCell>
-                      {role === "admin" && (
-                        <TableCell align="right">
-                          <IconButton
-                            color="primary"
-                            onClick={() => {
-                              const EstateUpdateById = estateData.filter(
-                                (estate) => {
-                                  return estate._id === item._id;
-                                }
-                              );
-                              setObjUpdate(EstateUpdateById);
-                              setNameEstate(EstateUpdateById[0].name);
-                              setStatusEstate(EstateUpdateById[0].status);
-                              setOpen(true);
-                            }}
-                          >
-                            <UpdateIcon />
-                          </IconButton>
-                        </TableCell>
-                      )}
+                      <TableCell align="right">
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            const EstateUpdateById = estateData.filter(
+                              (estate) => {
+                                return estate._id === item._id;
+                              }
+                            );
+                            setObjUpdate(EstateUpdateById);
+                            setNameEstate(EstateUpdateById[0].name);
+                            setStatusEstate(EstateUpdateById[0].status);
+                            setOpen(true);
+                          }}
+                        >
+                          <UpdateIcon />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
                   );
                 })}

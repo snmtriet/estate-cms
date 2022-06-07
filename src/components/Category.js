@@ -167,7 +167,6 @@ export const Category = () => {
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
-  const [role, setRole] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [open2, setOpen2] = React.useState(false);
   const [categoryData, setCategoryData] = React.useState([]);
@@ -184,10 +183,7 @@ export const Category = () => {
   React.useEffect(() => {
     const getData = async () => {
       const token = await Cookies.get("auth");
-      const role = await Cookies.get("role");
-      const originalRole = cryptoData(role, "role");
       const originalToken = cryptoData(token, "token");
-      setRole(originalRole);
       const resEstate = await estateApi.get("/estates", {
         headers: {
           Authorization: `Bearer ${originalToken}`,
@@ -397,7 +393,7 @@ export const Category = () => {
             </Typography>
           )}
 
-          {role === "admin" && selected.length > 0 ? (
+          {selected.length > 0 ? (
             <>
               <Tooltip title="Delete">
                 <IconButton
@@ -512,28 +508,24 @@ export const Category = () => {
                         {" "}
                         {moment(item.createdAt).format("DD-MM-YYYY HH:mm")}
                       </TableCell>
-                      {role === "admin" && (
-                        <TableCell align="right">
-                          <IconButton
-                            color="primary"
-                            onClick={() => {
-                              const CategoryUpdateById = categoryData.filter(
-                                (estate) => {
-                                  return estate._id === item._id;
-                                }
-                              );
-                              setNameCategory(CategoryUpdateById[0].name);
-                              setIdCategory(CategoryUpdateById[0]._id);
-                              setDescribeCategory(
-                                CategoryUpdateById[0].describe
-                              );
-                              setOpen(true);
-                            }}
-                          >
-                            <UpdateIcon />
-                          </IconButton>
-                        </TableCell>
-                      )}
+                      <TableCell align="right">
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            const CategoryUpdateById = categoryData.filter(
+                              (estate) => {
+                                return estate._id === item._id;
+                              }
+                            );
+                            setNameCategory(CategoryUpdateById[0].name);
+                            setIdCategory(CategoryUpdateById[0]._id);
+                            setDescribeCategory(CategoryUpdateById[0].describe);
+                            setOpen(true);
+                          }}
+                        >
+                          <UpdateIcon />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
                   );
                 })}

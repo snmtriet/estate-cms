@@ -161,7 +161,6 @@ export const Faculty = () => {
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
-  const [role, setRole] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [nameFaculty, setNameFaculty] = React.useState("");
   const [describeFaculty, setDescribeFaculty] = React.useState("");
@@ -174,11 +173,8 @@ export const Faculty = () => {
   };
   React.useEffect(() => {
     const getData = async () => {
-      const role = await Cookies.get("role");
       const token = await Cookies.get("auth");
-      const originalRole = cryptoData(role, "role");
       const originalToken = cryptoData(token, "token");
-      setRole(originalRole);
       const response = await estateApi.get("/faculties", {
         headers: {
           Authorization: `Bearer ${originalToken}`,
@@ -344,26 +340,24 @@ export const Faculty = () => {
                       <TableCell align="right">
                         {moment(item.createdAt).format("DD-MM-YYYY HH:mm")}
                       </TableCell>
-                      {role === "admin" && (
-                        <TableCell align="right">
-                          <IconButton
-                            color="primary"
-                            onClick={() => {
-                              const FacultyUpdateById = facultyData.filter(
-                                (estate) => {
-                                  return estate._id === item._id;
-                                }
-                              );
-                              setNameFaculty(FacultyUpdateById[0].name);
-                              setDescribeFaculty(FacultyUpdateById[0].describe);
-                              setIdFacultyUpdate(FacultyUpdateById[0]._id);
-                              setOpen(true);
-                            }}
-                          >
-                            <UpdateIcon />
-                          </IconButton>
-                        </TableCell>
-                      )}
+                      <TableCell align="right">
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            const FacultyUpdateById = facultyData.filter(
+                              (estate) => {
+                                return estate._id === item._id;
+                              }
+                            );
+                            setNameFaculty(FacultyUpdateById[0].name);
+                            setDescribeFaculty(FacultyUpdateById[0].describe);
+                            setIdFacultyUpdate(FacultyUpdateById[0]._id);
+                            setOpen(true);
+                          }}
+                        >
+                          <UpdateIcon />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
                   );
                 })}

@@ -95,19 +95,11 @@ const signin =
         password,
       });
       const token = response.data.token;
-      const role = response.data.data.user.role;
-      const cipherRole = await cryptoJs.AES.encrypt(
-        role,
-        "secret role"
-      ).toString();
       const cipherToken = await cryptoJs.AES.encrypt(
         token,
         "secret token"
       ).toString();
       await Cookies.set("auth", cipherToken, {
-        expires: 90,
-      });
-      await Cookies.set("role", cipherRole, {
         expires: 90,
       });
       await Cookies.set("name", response.data.data.user.fullname, {
@@ -210,7 +202,6 @@ const updateFaculty = (dispatch) => async (name, describe, id) => {
 
 const signout = (dispatch) => async () => {
   await Cookies.remove("auth");
-  await Cookies.remove("role");
   await Cookies.remove("name");
   dispatch({ type: "signout" });
 };

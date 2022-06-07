@@ -180,7 +180,6 @@ export const Users = () => {
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
-  const [role, setRole] = React.useState("");
   const [open2, setOpen2] = React.useState(false);
 
   const cryptoData = (value, type) => {
@@ -190,11 +189,8 @@ export const Users = () => {
   };
   React.useEffect(() => {
     const getData = async () => {
-      const role = await Cookies.get("role");
       const token = await Cookies.get("auth");
-      const originalRole = cryptoData(role, "role");
       const originalToken = cryptoData(token, "token");
-      setRole(originalRole);
       const response = await estateApi.get("/users", {
         headers: {
           Authorization: `Bearer ${originalToken}`,
@@ -310,7 +306,7 @@ export const Users = () => {
             </Typography>
           )}
 
-          {role === "admin" && selected.length > 0 ? (
+          {selected.length > 0 ? (
             <>
               <Tooltip title="Delete">
                 <IconButton
