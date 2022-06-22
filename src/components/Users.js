@@ -308,7 +308,7 @@ export const Users = () => {
 
           {selected.length > 0 ? (
             <>
-              <Tooltip title="Delete">
+              {/* <Tooltip title="Delete">
                 <IconButton
                   color="error"
                   onClick={() => {
@@ -361,7 +361,7 @@ export const Users = () => {
                   </Button>
                 </DialogActions>
               </Dialog>
-              <ToastContainer autoClose={2000} />
+              <ToastContainer autoClose={2000} /> */}
             </>
           ) : (
             <Tooltip title="Filter list">
