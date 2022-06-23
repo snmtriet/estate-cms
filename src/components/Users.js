@@ -14,29 +14,17 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
+// import { createFilterOptions } from "@mui/material/Autocomplete";
 
 import estateApi from "../axios/estate";
 import Cookies from "js-cookie";
 import moment from "moment";
-import { Context } from "../context/authContext";
 import cryptoJs from "crypto-js";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { DialogContentText } from "@mui/material";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -170,7 +158,7 @@ EnhancedTableHead.propTypes = {
 };
 
 export const Users = () => {
-  const { deleteUser } = React.useContext(Context);
+  // const { deleteUser } = React.useContext(Context);
 
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [userData, setUserData] = React.useState([]);
@@ -180,7 +168,7 @@ export const Users = () => {
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
-  const [open2, setOpen2] = React.useState(false);
+  // const [open2, setOpen2] = React.useState(false);
 
   const cryptoData = (value, type) => {
     const bytes = cryptoJs.AES.decrypt(value, `secret ${type}`);
@@ -261,14 +249,14 @@ export const Users = () => {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - userData.length) : 0;
 
-  const filterOptions = createFilterOptions({
-    matchFrom: "start",
-    stringify: (option) => option.role,
-  });
+  // const filterOptions = createFilterOptions({
+  //   matchFrom: "start",
+  //   stringify: (option) => option.role,
+  // });
 
-  const uniqueRoleUser = [
-    ...new Map(userData.map((item) => [item["role"], item])).values(),
-  ];
+  // const uniqueRoleUser = [
+  //   ...new Map(userData.map((item) => [item["role"], item])).values(),
+  // ];
 
   return (
     <Box fullWidth>
@@ -366,7 +354,7 @@ export const Users = () => {
           ) : (
             <Tooltip title="Filter list">
               <>
-                <Autocomplete
+                {/* <Autocomplete
                   id="filter-role"
                   options={uniqueRoleUser}
                   isOptionEqualToValue={(option, value) =>
@@ -397,7 +385,7 @@ export const Users = () => {
                 />
                 <IconButton>
                   <FilterListIcon />
-                </IconButton>
+                </IconButton> */}
               </>
             </Tooltip>
           )}
