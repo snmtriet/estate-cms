@@ -152,7 +152,7 @@ export const Inventory = () => {
     const getData = async () => {
       const response = await estateApi.get("/inventories");
       const data = await response.data.data.inventory;
-      setInventoryData(data);
+      setInventoryData(data.reverse());
       setRenderData(false);
     };
     getData();
